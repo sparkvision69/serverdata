@@ -1,0 +1,76 @@
+'use client';
+import { Button } from '@mui/material';
+import { motion } from 'framer-motion';
+
+
+export default function Custom404() {
+  return (
+    <div className="relative flex items-center justify-center min-h-screen ">
+
+
+      <motion.div
+        className="relative text-center p-8 rounded-xl  bg-opacity-80"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <div className='flex items-center gap-3'>
+        <video
+          src="/manufacture.mp4"
+          autoPlay
+          loop
+          muted
+          className="w-[100px] h-[100px] object-cover rounded-xl"
+        ></video>
+        <motion.h1
+          className="text-6xl mb-2 py-2 font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500"
+          initial={{ y: -50 }}
+          animate={{ y: 0 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          404 - Page Not Found
+        </motion.h1>
+        <video
+            src="/chatbot.mp4"
+            autoPlay
+            loop
+            muted
+            className="w-[100px] h-[100px] object-cover rounded-xl"
+          ></video>
+        </div>
+        <motion.p
+          className="mt-4 text-xl text-gray-700"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1 }}
+        >
+          Oops! The page you are looking for doesn’t exist.
+        </motion.p>
+
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            href="/"
+            sx={{
+              marginTop: 4,
+              textTransform: 'none',
+              padding: '',
+              fontSize: '1.2rem',
+              '&:hover': {
+                backgroundColor: '#f50057', 
+              }
+            }}
+          >
+            Go to Home
+          </Button>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
