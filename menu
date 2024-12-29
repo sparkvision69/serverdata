@@ -1,0 +1,154 @@
+import { useTheme } from '@mui/material/styles';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import { Menu, MenuItem, SubMenu } from '../../../@menu/vertical-menu';
+import useVerticalNav from '../../../@menu/hooks/useVerticalNav';
+import StyledVerticalNavExpandIcon from '../../../@menu/styles/vertical/StyledVerticalNavExpandIcon';
+import menuItemStyles from '../../../@core/styles/vertical/menuItemStyles';
+import menuSectionStyles from '../../../@core/styles/vertical/menuSectionStyles';
+import { useEffect, useState } from 'react';
+import { GrAppsRounded } from "react-icons/gr";
+import { TbServerBolt } from "react-icons/tb";
+import { FiRadio } from "react-icons/fi";
+import { useUserType } from '../../../checker/auth';
+
+const RenderExpandIcon = ({ open, transitionDuration }) => (
+    <StyledVerticalNavExpandIcon open={open} transitionDuration={transitionDuration}>
+        <i className='ri-arrow-right-s-line' />
+    </StyledVerticalNavExpandIcon>
+);
+
+const VerticalMenu = ({ scrollMenu }) => {
+    const theme = useTheme();
+    const { isBreakpointReached, transitionDuration } = useVerticalNav();
+    const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar;
+    const [currentUserRole, setCurrentUserRole] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const { userType } = useUserType();  
+
+    useEffect(() => {
+        if (userType) {
+            setCurrentUserRole(userType); 
+        }
+        setLoading(false);
+    }, [userType]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!currentUserRole) {
+        return null;
+    }
+
+    return (
+        <ScrollWrapper
+            {...(isBreakpointReached
+                ? {
+                    className: 'bs-full overflow-y-auto overflow-x-hidden',
+                    onScroll: container => scrollMenu(container, false),
+                }
+                : {
+                    options: { wheelPropagation: false, suppressScrollX: true },
+                    onScrollY: container => scrollMenu(container, true),
+                })}
+        >
+            <Menu
+                menuItemStyles={menuItemStyles(theme)}
+                renderExpandIcon={({ open }) => (
+                    <RenderExpandIcon open={open} transitionDuration={transitionDuration} />
+                )}
+                renderExpandedMenuItemIcon={{ icon: <i className='ri-circle-line' /> }}
+                menuSectionStyles={menuSectionStyles(theme)}
+            >
+                {currentUserRole === 'superadmin' && (
+                    <>
+                        <MenuItem
+                            href="/"
+                            icon={<i className='ri-apps-2-ai-line' />}
+                        >
+                            Dashboard
+                        </MenuItem>
+                        <MenuItem
+                            href="/s_company"
+                            icon={<i className='ri-bank-line' />}
+                        >
+                            Company
+                        </MenuItem>
+                        <MenuItem
+                            href="/s_users"
+                            icon={<i className='ri-group-line' />}
+                        >
+                            Users
+                        </MenuItem>
+                        <MenuItem
+                            href="/auto_backup"
+                            icon={<i className='ri-exchange-funds-line' />}
+                        >
+                            auto backup
+                        </MenuItem>
+                    </>
+                )}
+
+                {currentUserRole === 'admin' && (
+                    <>
+                        <MenuItem
+                            href="/"
+                            icon={<i className='ri-apps-2-ai-line' />}
+                        >
+                            Dashboard
+                        </MenuItem>
+                        <MenuItem
+                            href="/a_company"
+                            icon={<i className='ri-bank-line' />}
+                        >
+                            Company
+                        </MenuItem>
+                        <MenuItem
+                            href="/a_users"
+                            icon={<i className='ri-group-line' />}
+                        >
+                            Users
+                        </MenuItem>
+                        <MenuItem
+                            href="/a_server"
+                            icon={<i className='ri-server-line' />}
+                        >
+                            Servers
+                        </MenuItem>
+                        <MenuItem href='/a_dnsname'>
+                            <FiRadio className="mr-2" size={18} />
+                            <span className="mb-2"> DNS Name</span>
+                        </MenuItem>
+
+                        <SubMenu
+                            label="auto backup"
+                            icon={<i className="ri-exchange-funds-line" />}
+                            renderExpandIcon={({ open }) => (
+                                <i className={`ri-arrow-${open ? 'down' : 'right'}-s-line`} />
+                            )}
+                        >
+                            <MenuItem href="/a_auto_backup/stfp_servers" icon={<i className="ri-server-fill text-2xl" />} >
+
+                                SFTP Servers
+                            </MenuItem>
+                            <MenuItem href="/a_auto_backup/backup_servers" icon={<i className="ri-download-cloud-line text-2xl  " />}>
+                                Backup Servers
+                            </MenuItem>
+                        </SubMenu>
+
+                    </>
+                )}
+
+                {currentUserRole === 'user' && (
+                    <>
+                        <MenuItem href='/'><GrAppsRounded /> Dashboard</MenuItem>
+                        <MenuItem href='/u_server'><TbServerBolt /> Servers</MenuItem>
+                    </>
+                )}
+            </Menu>
+        </ScrollWrapper>
+    );
+};
+
+export default VerticalMenu;
