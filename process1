@@ -1,0 +1,341 @@
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Box, Button, Typography, CircularProgress, LinearProgress } from '@mui/material';
+import { SiApache, SiCaddy, SiNginx, SiPlesk } from "react-icons/si";
+import { FaServer, FaLinux, FaCloud, FaCpanel } from "react-icons/fa";
+import { IoShieldCheckmarkSharp } from 'react-icons/io5';
+import Process from './process/page'
+import { ThreeDot } from 'react-loading-indicators';
+
+
+const terminalStyle = {
+  background: 'linear-gradient(145deg, #1e1e1e, #252525)',
+  color: '#00FF00',
+  padding: '20px',
+  borderRadius: '10px',
+  fontFamily: 'Courier New, Courier, monospace',
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.8)',
+  width: '65%',
+  height: '70%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  overflowY: 'auto',
+  position: 'relative',
+};
+
+const buttonContainerStyle = {
+  display: 'flex',
+  gap: '10px',
+  marginBottom: 10,
+  zIndex: 10,
+};
+
+const buttonStyle = {
+  width: '12px',
+  height: '12px',
+  borderRadius: '50%',
+  backgroundColor: '#FF5F57',
+  cursor: 'pointer',
+};
+
+const buttonYellowStyle = {
+  ...buttonStyle,
+  backgroundColor: '#FFBD2E',
+};
+
+const buttonGreenStyle = {
+  ...buttonStyle,
+  backgroundColor: '#27C93F',
+};
+
+const App = () => {
+  const canvasRef = useRef(null);
+  const [isClient, setIsClient] = useState(false); // To ensure no hydration mismatch
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [screenHeight, setScreenHeight] = useState(window.innerHeight);
+   const [currentCommand, setCurrentCommand] = useState(null);
+    const [executedCommands, setExecutedCommands] = useState([]);
+    const [isRunning, setIsRunning] = useState(false);
+    const [scale, setScale] = useState(1);
+  
+    const commands = [
+      { id: 1, command: "virtualmin create-dns --domain <domain_name> --name <record_name> --type <record_type> --value <record_value>", commandname: "Create DNS Record" },
+      { id: 2, command: "echo '<?php echo \"Hello, World!\"; ?>' > /home/<username>/public_html/index.php", commandname: "Create User index.php File" },
+      { id: 3, command: "sudo apt-get update && sudo apt-get upgrade -y", commandname: "Update System Packages" },
+      { id: 4, command: "npm install express --save", commandname: "Install Express Framework" },
+      { id: 5, command: "git clone https://github.com/some/repo.git", commandname: "Clone Git Repository" },
+      { id: 6, command: "docker pull nginx", commandname: "Pull Nginx Docker Image" },
+      { id: 7, command: "python3 -m venv venv && source venv/bin/activate", commandname: "Create Virtual Environment" },
+      { id: 8, command: "composer install", commandname: "Install Composer Dependencies" },
+      { id: 9, command: "chmod +x /path/to/script.sh", commandname: "Make Script Executable" },
+      { id: 10, command: "ssh user@host 'sudo reboot'", commandname: "Reboot Server" },
+      { id: 11, command: "curl -X GET https://api.example.com/data", commandname: "API Request" },
+      { id: 12, command: "docker-compose up -d", commandname: "Start Docker Containers" },
+      { id: 13, command: "tar -czf archive.tar.gz /path/to/folder", commandname: "Create Tar Archive" },
+    ];
+  
+    useEffect(() => {
+      const executeCommands = async () => {
+        for (let cmd of commands) {
+          setCurrentCommand(cmd);
+          setIsRunning(true);
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 2000 + 4000));
+          setExecutedCommands((prev) => [...prev, cmd]);
+          setIsRunning(false);
+        }
+      };
+      executeCommands();
+    }, []);
+  
+    const handleDoneClick = () => {
+      setScale(1.03);
+      setTimeout(() => {
+        setScale(1);
+      }, 100);
+    };
+
+  useEffect(() => {
+    setIsClient(true); // Confirms we're on the client
+
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+      setScreenHeight(window.innerHeight);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const particles = [];
+    const particleCount = 100;
+
+    const initParticles = () => {
+      particles.length = 0; // Clear particles on resize
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          speed: Math.random() * 3 + 1,
+          length: Math.random() * 15 + 5,
+          opacity: Math.random() * 0.5 + 0.2,
+        });
+      }
+    };
+
+    const drawParticles = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(173, 216, 230, 0.8)";
+      ctx.lineWidth = 1.5;
+
+      particles.forEach((p) => {
+        ctx.globalAlpha = p.opacity;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x, p.y + p.length);
+        ctx.stroke();
+      });
+    };
+
+    const updateParticles = () => {
+      particles.forEach((p) => {
+        p.y += p.speed;
+        if (p.y > canvas.height) {
+          p.y = -p.length;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+    };
+
+    const animate = () => {
+      drawParticles();
+      updateParticles();
+      requestAnimationFrame(animate);
+    };
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initParticles();
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+    animate();
+
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
+
+  const leftIcons = [
+    { icon: <SiApache size={40} color="orange" />, name: "Apache" },
+    { icon: <SiNginx size={40} color="#32a852" />, name: "Nginx" },
+    { icon: <FaServer size={40} color="#d92938" />, name: "Lightspeed" },
+    { icon: <FaLinux size={40} color="#f09337" />, name: "Virtualmin" },
+  ];
+
+  const rightIcons = [
+    { icon: <SiPlesk size={40} color="white" />, name: "Plesk" },
+    { icon: <FaCloud size={40} color="#29a0cf" />, name: "Server" },
+    { icon: <SiCaddy size={40} color="#10c260" />, name: "Caddy" },
+    { icon: <FaCpanel size={40} color="#eb672a" />, name: "CPanel" },
+  ];
+
+  const randomizeAnimation = () => {
+    const animations = [
+      { y: [0, -5, 5, 0], x: [0, 5, -5, 0], scale: [1, 1.05, 1] },
+      { y: [0, -10, 0], x: [0, 0], scale: [1, 1.1, 1] },
+      { y: [0, 0], x: [0, 10, -10, 0], scale: [1, 1.1, 1] },
+      { y: [0, 0], x: [0, 0], scale: [1, 1.2, 1], rotate: [0, 20, 0] },
+    ];
+    return animations[Math.floor(Math.random() * animations.length)];
+  };
+
+  const renderIcons = (icons, side) => {
+    // Define fixed positions for left and right icons
+    const fixedPositions = side === "left" 
+      ? [
+          { top: "10%", left: "7%" },
+          { top: "30%", left: "10%" },
+          { top: "50%", left: "6%" },
+          { top: "70%", left: "10%" },
+        ]
+      : [
+          { top: "10%", left: "90%" },
+          { top: "30%", left: "93%" },
+          { top: "50%", left: "87%" },
+          { top: "70%", left: "92%" },
+        ];
+  
+    return icons.map(({ icon, name }, index) => {
+      const position = fixedPositions[index % fixedPositions.length]; // Repeat positions if there are more icons than positions
+  
+      const randomAnimation = randomizeAnimation(); // Randomize animation for each icon
+  
+      return (
+        <motion.div
+          key={name}
+          className="absolute"
+          style={{
+            top: position.top,
+            left: position.left,
+            filter: "drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.4))",
+          }}
+          animate={randomAnimation} // Apply the randomized animation
+          transition={{
+            duration: 4,
+            ease: "easeInOut",
+            repeat: Infinity,
+          }}
+          whileHover={{
+            scale: 1.7,
+            rotate: 360,
+            filter: "drop-shadow(0px 0px 20px rgba(255, 255, 153, 0.8))",
+          }}
+        >
+          {icon}
+        </motion.div>
+      );
+    });
+  };
+  
+  
+
+  return (
+    <div className="relative w-full h-screen bg-gradient-to-tr from-gray-900 to-black overflow-hidden" onClick={handleDoneClick}>
+      <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full"></canvas>
+      {isClient && renderIcons(leftIcons, "left")}
+      {isClient && renderIcons(rightIcons, "right")}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#121212' }} >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale, opacity: 1 }} // Apply the scale here
+        transition={{ duration: 0.5 }}
+        style={terminalStyle}
+      >
+        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'top', flexDirection: 'row' }}>
+          <div style={buttonContainerStyle}>
+            <div style={buttonStyle}></div>
+            <div style={buttonYellowStyle}></div>
+            <div style={buttonGreenStyle}></div>
+          </div>
+
+          <Typography
+            variant="h6"
+            style={{
+              color: '#00FF00',
+              marginBottom: '16px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              alignSelf: 'center',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Box style={{ display: 'flex', alignItems: 'center' }}>
+              <ThreeDot variant="pulsate" color="#32cd32" size="small" />
+            </Box>
+            <Box style={{ marginLeft: '10px', textAlign: 'right', flexGrow: 1 }}>
+              {currentCommand ? currentCommand.commandname : 'Initializing...'}
+            </Box>
+          </Typography>
+        </Box>
+
+        <LinearProgress
+          variant="determinate"
+          value={(executedCommands.length / commands.length) * 100}
+          style={{ marginBottom: '10px', backgroundColor: '#333', height: '6px', borderRadius: '5px' }}
+          color="secondary"
+        />
+
+
+        <Box  style={{ flexGrow: 1, marginBottom: '20px', overflowY: 'auto', padding: '10px', scrollbarWidth: 'none' }} >
+          {commands.map((cmd) => (
+            <div key={cmd.id} style={{ marginBottom: '10px' }}>
+              <span style={{ color: executedCommands.includes(cmd) ? '#00FF00' : '#AAAAAA' }}>
+                {executedCommands.includes(cmd) ? (
+                  <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} transition={{ duration: 0.2 }}>
+                    <IoShieldCheckmarkSharp style={{ verticalAlign: 'middle', marginRight: '5px', color: '#00FF00' }} />
+                    {cmd.commandname}
+                  </motion.div>
+                ) : cmd === currentCommand && isRunning ? (
+                  <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} transition={{ duration: 0.2 }}>
+                    <CircularProgress size={16} style={{ color: '#FFFF00', marginRight: '5px' }} />
+                    Running: {cmd.commandname}
+                  </motion.div>
+                ) : (
+                  <span>{cmd.commandname}</span>
+                )}
+              </span>
+            </div>
+          ))}
+        </Box>
+
+        <Box style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'auto' }}>
+          <Button
+            variant="contained"
+            style={{
+              background: 'linear-gradient(145deg, #ff416c, #ff4b2b)',
+              color: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 10px rgba(255, 75, 43, 0.5)',
+            }}
+            onClick={handleDoneClick}
+          >
+            done
+          </Button>
+        </Box>
+      </motion.div>
+    </div>
+
+    </div>
+  );
+};
+
+export default App;
